@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>С днём рождения, maggot!</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    color: #000000;
+    padding: 25px 15px;
+
+    background-color: #00ff00;
+    background-image:
+        linear-gradient(45deg, #ff0080 25%, transparent 25%),
+        linear-gradient(-45deg, #ff0080 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ff0080 75%),
+        linear-gradient(-45deg, transparent 75%, #ff0080 75%);
+    background-size: 50px 50px;
+    background-position:
+        0 0, 0 25px, 25px -25px, -25px 0;
+}
+
+h1 {
+    font-size: clamp(27px, 5vw, 45px);
+    color: #d66c9d;
+    text-shadow: 2px 2px white;
+}
+
+.subtitle {
+    font-size: 17px;
+    margin-bottom: 30px;
+}
+
+.characters {
+    max-width: 850px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.character {
+    cursor: pointer;
+    background: rgba(255,255,255,0.75);
+    border: 3px solid white;
+    border-radius: 20px;
+    padding: 10px;
+    transition: 0.3s;
+    box-shadow: 0 5px 12px #b9a6b477;
+}
+
+.character:hover {
+    transform: translateY(-6px) scale(1.03);
+}
+
+.character img {
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+}
+
+.character p {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.character.done {
+    border-color: #d66c9d;
+    background: #fce1ed;
+}
+
+.bubble {
+    display: none;
+    max-width: 600px;
+    margin: 30px auto;
+    padding: 22px;
+    background: white;
+    border: 3px solid #d66c9d;
+    border-radius: 25px;
+    position: relative;
+    font-size: 18px;
+    line-height: 1.5;
+    box-shadow: 0 5px 15px #b9a6b477;
+    animation: appear 0.4s ease;
+}
+
+.bubble.show {
+    display: block;
+}
+
+.bubble::before {
+    content: "";
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 23px;
+    height: 23px;
+    background: white;
+    border-left: 3px solid #d66c9d;
+    border-top: 3px solid #d66c9d;
+}
+
+.counter {
+    margin: 25px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+@keyframes appear {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Финальный экран */
+
+.final-screen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    overflow-y: auto;
+    padding: 25px 15px;
+    background: rgba(245, 226, 237, 0.94);
+    backdrop-filter: blur(15px);
+}
+
+.final-screen.show {
+    display: block;
+    animation: finalAppear 2s ease;
+}
+
+.final-screen h1 {
+    margin: 25px auto 35px;
+}
+
+.final-photo {
+    display: block;
+    width: 95%;
+    max-width: 950px;
+    max-height: 65vh;
+    object-fit: contain;
+    margin: auto;
+    border: 5px solid white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px #0003;
+}
+
+@keyframes finalAppear {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(15px);
+    }
+}
+
+@media(max-width: 500px) {
+    .characters {
+        gap: 10px;
+    }
+
+    .character img {
+        height: 100px;
+    }
+
+    .character {
+        padding: 6px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<h1> Поздравления для тебя </h1>
+
+<p class="subtitle">
+    Нажми на каждого участника и прочитай его пожелание 
+</p>
+
+<div class="characters" id="characters"></div>
+
+<div class="bubble" id="bubble"></div>
+
+<div class="counter" id="counter">
+    Поздравления: 0 / 9
+</div>
+
+<!-- Финальный экран -->
+
+<div class="final-screen" id="finalScreen">
+
+    <h1>С днём рождения, maggot!</h1>
+
+    <img
+        src="images/slipknot-group.jpg"
+        alt="Все девять участников Slipknot"
+        class="final-photo"
+    >
+
+</div>
+
+<script>
+
+const characters = [
+    {
+        name: "Участник 1",
+        image: "images/character1.png",
+        wish: "С днём рождения, чувак! Желаю тебе столько шума, чтобы у соседей случился инфаркт, а у тебя - ни одного тихого дня. Пусть твой торт взорвётся конфетти, как мои сэмплы на концерте. И помни: хаос - это праздник! "
+    },
+
+    {
+        name: "Участник 2",
+        image: "images/character2.png",
+        wish: "Поздравляю! Желаю тебе скорости - как у моей двойной бочки, и чтобы жизнь не сбавляла темп. Пусть каждый твой год будет как мой сольный запил: быстро, жёстко и незабываемо. С днём рождения, зажигай! "
+    },
+
+    {
+        name: "Участник 3",
+        image: "images/character3.png",
+        wish: "С днём рождения. Желаю тебе не прогибаться под этот мир и рвать его, как мои соло. Будь прямым, злым и честным. И побольше тебе драйва - без соплей. Поздравляю "
+    },
+
+    {
+        name: "Участник 4",
+        image: "images/character4.png",
+        wish: "Поздравляю. Надеюсь, твой год будет не таким тяжёлым, как мои риффы, но таким же запоминающимся. Желаю тебе спокойствия (в разумных пределах) и чтобы никто не трогал твой усилитель. С днём рождения. "
+    },
+
+    {
+        name: "Участник 5",
+        image: "images/character5.png",
+        wish: "С днём рождения. Желаю тебе найти свет даже в самой тёмной яме - и орать об этом так, чтобы тебя услышали. Пусть твоя жизнь будет песней, которую хочется петь до хрипоты. Будь собой, даже если это больно. С днём рождения, друг. "
+    },
+
+    {
+        name: "Участник 6",
+        image: "images/character6.png",
+        wish: "(молча кивает, протягивает странный шумовой подарок и исчезает в тумане). Но если расшифровать: «С днём рождения. Пусть в твоей жизни будет больше загадочных и крутых звуков "
+    },
+
+    {
+        name: "Участник 7",
+        image: "images/character7.png",
+        wish: "С днём рождения, магgot! Сегодня твой день - так что надень маску, возьми в руки что-нибудь тяжёлое и покажи этому миру, кто здесь хозяин. Мы - семья, и ты - её часть. Пусть твой год будет громким, как наше шоу! "
+    },
+
+    {
+        name: "Участник 8",
+        image: "images/character8.png",
+        wish: "С днюхой, братан! Пусть у тебя будет столько же низких частот в жизни, сколько у моего баса - чтобы всё вибрировало от счастья. И не забудь про чувство юмора: без него в этом мире - как без баса в миксе. Бум! "
+    },
+
+    {
+        name: "Участник 9",
+        image: "images/character9.png",
+        wish: "С днём рождения! Желаю тебе бить по жизни так же мощно, как я по бочкам. Пусть всё вокруг гремит от радости, а проблемы разлетаются вдребезги. Будь злым, но счастливым! "
+    }
+
+];
+
+const container = document.getElementById("characters");
+const bubble = document.getElementById("bubble");
+const counter = document.getElementById("counter");
+const finalScreen = document.getElementById("finalScreen");
+
+let opened = new Set();
+
+characters.forEach((character, index) => {
+
+    const card = document.createElement("div");
+    card.className = "character";
+
+    const img = document.createElement("img");
+    img.src = character.image;
+    img.alt = character.name;
+
+    const name = document.createElement("p");
+    name.textContent = character.name;
+
+    card.appendChild(img);
+    card.appendChild(name);
+
+    container.appendChild(card);
+
+    card.addEventListener("click", () => {
+
+        bubble.innerHTML =
+            "<strong>" + character.name +
+            " говорит:</strong><br><br>" +
+            character.wish;
+
+        bubble.classList.remove("show");
+
+        void bubble.offsetWidth;
+
+        bubble.classList.add("show");
+
+        card.classList.add("done");
+
+        opened.add(index);
+
+        counter.textContent =
+            "Поздравления: " + opened.size + " / 9";
+
+        if (opened.size === 9) {
+
+            setTimeout(() => {
+                finalScreen.classList.add("show");
+            }, 1500);
+
+        }
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>
